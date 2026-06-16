@@ -4,6 +4,10 @@
 
 > Designed for Google Search, Gemini, enterprise copilots, healthcare assistants, legal assistants, and customer support systems where factual correctness is critical.
 
+🌐 **Live demo:** [https://frontend-five-rho-19cmzgi7i2.vercel.app](https://frontend-five-rho-19cmzgi7i2.vercel.app)
+
+🐱 **Chrome Extension:** Load `extension/` folder in `chrome://extensions` with Developer Mode
+
 ## System Overview
 
 ```mermaid
