@@ -1,0 +1,128 @@
+/* Veritas Cat v2 — Cute Desktop Pet Stylesheet */
+
+#veritas-cat-container {
+  position: fixed;
+  z-index: 2147483647;
+  cursor: grab;
+  user-select: none;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  image-rendering: auto;
+  transition: opacity 0.3s ease;
+}
+
+/* ── Speech Bubble (cute rounded style) ─────────────────────────────── */
+
+#vcat-speech {
+  position: absolute;
+  bottom: 102px;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 170px;
+  max-width: 260px;
+  background: rgba(30, 30, 50, 0.95);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 12px 16px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+
+#vcat-speech.vcat-hidden {
+  opacity: 0;
+  transform: translateX(-50%) translateY(12px) scale(0.92);
+  pointer-events: none;
+}
+
+#vcat-speech.vcat-show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+#vcat-speech-text {
+  font-size: 12px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+#vcat-speech-arrow {
+  position: absolute;
+  bottom: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 7px;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  background: rgba(30, 30, 50, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ── Cat Canvas ───────────────────────────────────────────────────── */
+
+#vcat-canvas {
+  display: block;
+  width: 100px;
+  height: 100px;
+  border-radius: 16px;
+  background: transparent;
+  cursor: grab;
+  transition: transform 0.2s ease;
+}
+
+#vcat-canvas:hover {
+  transform: scale(1.03);
+}
+
+#vcat-canvas:active {
+  cursor: grabbing;
+}
+
+/* ── Status Bar ──────────────────────────────────────────────────────── */
+
+#vcat-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 4px;
+  padding: 3px 12px;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+}
+
+#vcat-emoji {
+  font-size: 12px;
+}
+
+#vcat-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  opacity: 0.6;
+}
+
+/* ── Bounce on hover ────────────────────────────────────────────────── */
+
+@keyframes vcatBounce {
+  0%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-6px); }
+  60% { transform: translateY(-3px); }
+}
+
+#veritas-cat-container:hover #vcat-canvas {
+  animation: vcatBounce 0.5s ease-in-out;
+}
+
+/* ── Print / Mobile ─────────────────────────────────────────────────── */
+
+@media print { #veritas-cat-container { display: none !important; } }
+@media (max-width: 480px) { #veritas-cat-container { transform: scale(0.75); transform-origin: bottom left; } }

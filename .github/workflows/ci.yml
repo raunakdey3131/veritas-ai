@@ -1,0 +1,116 @@
+name: Veritas AI CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    - name: Install dependencies
+      run: |
+        pip install ruff mypy
+        pip install -r backend/requirements.txt
+    - name: Lint with Ruff
+      run: ruff check backend/ --fix
+    - name: Type check with mypy
+      run: mypy backend/ --ignore-missing-imports
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: veritas_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    - name: Install dependencies
+      run: |
+        pip install pytest pytest-asyncio httpx
+        pip install -r backend/requirements.txt
+    - name: Run tests
+      run: pytest backend/ --cov=backend/ --cov-report=xml -v
+      env:
+        DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/veritas_test
+        REDIS_HOST: localhost
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    strategy:
+      matrix:
+        service:
+          - api-gateway
+          - claim-extraction
+          - knowledge-retrieval
+          - verification-engine
+          - citation-validation
+          - contradiction-detection
+          - uncertainty-estimation
+          - risk-scoring
+          - monitoring-service
+          - analytics-service
+          - human-review
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    - name: Login to registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Build and push
+      uses: docker/build-push-action@v5
+      with:
+        context: backend/${{ matrix.service }}
+        push: true
+        tags: |
+          ${{ env.REGISTRY }}/veritas-ai/${{ matrix.service }}:${{ env.IMAGE_TAG }}
+          ${{ env.REGISTRY }}/veritas-ai/${{ matrix.service }}:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  deploy-dev:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/develop'
+    steps:
+    - uses: actions/checkout@v4
+    - uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+    - uses: google-github-actions/get-gke-credentials@v2
+      with:
+        cluster_name: veritas-dev
+        location: us-central1
+    - name: Deploy to dev
+      run: |
+        kubectl set image deployment/api-gateway api-gateway=${{ env.REGISTRY }}/veritas-ai/api-gateway:${{ env.IMAGE_TAG }} -n veritas
+        kubectl set image deployment/claim-extraction claim-extraction=${{ env.REGISTRY }}/veritas-ai/claim-extraction:${{ env.IMAGE_TAG }} -n veritas

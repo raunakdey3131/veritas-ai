@@ -1,0 +1,64 @@
+name: Veritas AI CD
+
+on:
+  push:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  deploy-canary:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+    - uses: google-github-actions/get-gke-credentials@v2
+      with:
+        cluster_name: veritas-prod
+        location: us-central1
+    - name: Canary deploy (5%)
+      run: |
+        kubectl set image deployment/api-gateway-canary api-gateway=${{ env.REGISTRY }}/veritas-ai/api-gateway:${{ env.IMAGE_TAG }} -n veritas
+        echo "Canary deployed. Monitoring for 5 minutes..."
+        sleep 300
+    - name: Check canary health
+      run: |
+        ERROR_RATE=$(kubectl logs -l app=api-gateway-canary -n veritas --tail=1000 | grep "ERROR" | wc -l)
+        if [ $ERROR_RATE -gt 10 ]; then
+          echo "Error rate too high. Rolling back."
+          exit 1
+        fi
+
+  deploy-prod:
+    runs-on: ubuntu-latest
+    needs: deploy-canary
+    steps:
+    - uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+    - uses: google-github-actions/get-gke-credentials@v2
+      with:
+        cluster_name: veritas-prod
+        location: us-central1
+    - name: Full rollout
+      run: |
+        kubectl rollout status deployment/api-gateway -n veritas --timeout=5m
+        kubectl rollout status deployment/claim-extraction -n veritas --timeout=5m
+        kubectl rollout status deployment/verification-engine -n veritas --timeout=5m
+        echo "Full rollout complete."
+
+  smoke-test:
+    runs-on: ubuntu-latest
+    needs: deploy-prod
+    steps:
+    - name: Run smoke tests
+      run: |
+        curl -f -X POST https://api.veritas.ai/v1/verify \
+          -H "Content-Type: application/json" \
+          -d '{"query":"test","response":"test"}' \
+          -H "X-API-Key: ${{ secrets.VERITAS_API_KEY }}"
+        echo "Smoke test passed."

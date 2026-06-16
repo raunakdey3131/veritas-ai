@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veritas Cat</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <div id="header">
+      <span id="logo">🐱🎧</span>
+      <span id="title">Veritas Cat</span>
+    </div>
+
+    <!-- Cat Preview -->
+    <div id="cat-preview">
+      <canvas id="preview-canvas" width="64" height="64"></canvas>
+      <div id="preview-status">
+        <span id="preview-emoji">🐱</span>
+        <span id="preview-label">Ready</span>
+      </div>
+    </div>
+
+    <!-- Quick Verify -->
+    <div id="verify-section">
+      <textarea id="verify-input" placeholder="Paste text to check for hallucinations..." rows="3"></textarea>
+      <button id="verify-btn">Check Facts 🐱</button>
+    </div>
+
+    <!-- Results -->
+    <div id="tip-section">
+      <span id="tip-icon">🐱</span>
+      <span id="tip-text">Select text on any page, right-click, and choose "Check for Hallucinations"!</span>
+    </div>
+
+    <div id="result-section" class="hidden">
+      <div id="result-score">
+        <span id="result-label">Hallucination Score</span>
+        <span id="result-value">0</span>
+        <span id="result-unit">/100</span>
+      </div>
+      <div id="result-risk"></div>
+      <div id="result-summary"></div>
+      <div id="result-issues"></div>
+    </div>
+
+    <!-- Controls -->
+    <div id="controls">
+      <button class="ctrl-btn" id="summon-btn">🙋 Summon</button>
+      <button class="ctrl-btn" id="hide-btn">🙈 Hide</button>
+      <button class="ctrl-btn" id="tip-btn">💡 Tip</button>
+    </div>
+
+    <!-- Footer -->
+    <div id="footer">
+      <span id="footer-love">🐱 Made with love · Veritas AI</span>
+      <span id="status-dot"></span>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

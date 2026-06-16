@@ -1,0 +1,46 @@
+{
+  "settings": {
+    "number_of_shards": 6,
+    "number_of_replicas": 2,
+    "analysis": {
+      "analyzer": {
+        "claim_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": ["lowercase", "stop", "snowball", "edge_ngram"]
+        }
+      },
+      "filter": {
+        "edge_ngram": {
+          "type": "edge_ngram",
+          "min_gram": 2,
+          "max_gram": 20
+        }
+      }
+    }
+  },
+  "mappings": {
+    "dynamic": "strict",
+    "properties": {
+      "claim_id": { "type": "keyword" },
+      "request_id": { "type": "keyword" },
+      "claim_text": {
+        "type": "text",
+        "analyzer": "claim_analyzer",
+        "fields": {
+          "keyword": { "type": "keyword" },
+          "raw": { "type": "text", "analyzer": "standard" }
+        }
+      },
+      "normalized_claim": { "type": "text", "analyzer": "claim_analyzer" },
+      "subject": { "type": "keyword" },
+      "predicate": { "type": "keyword" },
+      "object": { "type": "keyword" },
+      "entity_type": { "type": "keyword" },
+      "verdict": { "type": "keyword" },
+      "support_score": { "type": "float" },
+      "confidence": { "type": "float" },
+      "created_at": { "type": "date" }
+    }
+  }
+}

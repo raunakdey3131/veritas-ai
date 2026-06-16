@@ -1,0 +1,191 @@
+version: "3.9"
+
+services:
+  api-gateway:
+    build:
+      context: ./backend/api_gateway
+      dockerfile: Dockerfile
+    ports: ["8000:8000"]
+    environment:
+      - REDIS_HOST=redis
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+    depends_on: [redis, otel-collector]
+    deploy:
+      replicas: 2
+      resources:
+        limits: {cpus: "1", memory: "2G"}
+
+  auth-service:
+    build:
+      context: ./backend/auth_service
+      dockerfile: Dockerfile
+    ports: ["8001:8001"]
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://veritas:veritas@postgres:5432/veritas
+    depends_on: [postgres]
+
+  claim-extraction:
+    build:
+      context: ./backend/claim_extraction
+      dockerfile: Dockerfile
+    ports: ["8010:8010"]
+    depends_on: [redis]
+    deploy:
+      resources:
+        limits: {cpus: "2", memory: "4G"}
+
+  knowledge-retrieval:
+    build:
+      context: ./backend/knowledge_retrieval
+      dockerfile: Dockerfile
+    ports: ["8020:8020"]
+    depends_on: [qdrant, elasticsearch, neo4j, redis]
+
+  verification-engine:
+    build:
+      context: ./backend/verification_engine
+      dockerfile: Dockerfile
+    ports: ["8030:8030"]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    depends_on: [redis]
+
+  citation-validation:
+    build:
+      context: ./backend/citation_validation
+      dockerfile: Dockerfile
+    ports: ["8040:8040"]
+
+  contradiction-detection:
+    build:
+      context: ./backend/contradiction_detection
+      dockerfile: Dockerfile
+    ports: ["8050:8050"]
+
+  uncertainty-estimation:
+    build:
+      context: ./backend/uncertainty_estimation
+      dockerfile: Dockerfile
+    ports: ["8060:8060"]
+
+  risk-scoring:
+    build:
+      context: ./backend/risk_scoring
+      dockerfile: Dockerfile
+    ports: ["8070:8070"]
+
+  monitoring-service:
+    build:
+      context: ./backend/monitoring_service
+      dockerfile: Dockerfile
+    ports: ["8080:8080"]
+
+  analytics-service:
+    build:
+      context: ./backend/analytics_service
+      dockerfile: Dockerfile
+    ports: ["8090:8090"]
+
+  human-review:
+    build:
+      context: ./backend/human_review
+      dockerfile: Dockerfile
+    ports: ["8100:8100"]
+
+  # Infrastructure
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: veritas
+      POSTGRES_PASSWORD: veritas
+      POSTGRES_DB: veritas
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./schemas/postgresql.sql:/docker-entrypoint-initdb.d/init.sql
+    ports: ["5432:5432"]
+
+  neo4j:
+    image: neo4j:5-community
+    environment:
+      NEO4J_AUTH: neo4j/veritas123
+      NEO4J_PLUGINS: '["apoc"]'
+    volumes:
+      - neo4j_data:/data
+    ports: ["7687:7687", "7474:7474"]
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 2gb --maxmemory-policy allkeys-lru
+
+  elasticsearch:
+    image: elasticsearch:8.12.2
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms4g -Xmx4g
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    ports: ["9200:9200"]
+
+  qdrant:
+    image: qdrant/qdrant:v1.8.0
+    volumes:
+      - qdrant_data:/qdrant/storage
+    ports: ["6333:6333"]
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    depends_on: [zookeeper]
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports: ["9092:9092"]
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  # Observability
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.95.0
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./infrastructure/docker/otel-collector.yaml:/etc/otel-collector-config.yaml
+    ports: ["4317:4317", "4318:4318"]
+
+  prometheus:
+    image: prom/prometheus:v2.50.1
+    volumes:
+      - ./infrastructure/docker/prometheus.yaml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports: ["9090:9090"]
+
+  grafana:
+    image: grafana/grafana:10.3.3
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=veritas
+    volumes:
+      - grafana_data:/var/lib/grafana
+    ports: ["3000:3000"]
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.55.0
+    ports: ["16686:16686", "4317:4317"]
+
+volumes:
+  postgres_data:
+  neo4j_data:
+  redis_data:
+  es_data:
+  qdrant_data:
+  prometheus_data:
+  grafana_data:

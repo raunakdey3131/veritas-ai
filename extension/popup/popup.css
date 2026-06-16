@@ -1,0 +1,230 @@
+/* Veritas Cat — Cute Popup Stylesheet */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  width: 330px;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+  color: #e0e0e0;
+  overflow: hidden;
+}
+
+#app { padding: 18px; }
+
+/* ── Header ────────────────────────────────────────────────────────── */
+
+#header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+#logo {
+  font-size: 28px;
+  line-height: 1;
+}
+
+#title {
+  font-size: 17px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #F5E6D3, #D4A574);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ── Cat Preview ───────────────────────────────────────────────────── */
+
+#cat-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 14px;
+  padding: 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 20px;
+}
+
+#preview-canvas {
+  width: 72px;
+  height: 72px;
+  image-rendering: auto;
+  border-radius: 12px;
+}
+
+#preview-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+}
+
+#preview-emoji { font-size: 14px; }
+#preview-label { text-transform: uppercase; letter-spacing: 1px; }
+
+/* ── Verify ─────────────────────────────────────────────────────────── */
+
+#verify-section { margin-bottom: 12px; }
+
+#verify-input {
+  width: 100%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 10px 14px;
+  color: #e0e0e0;
+  font-size: 12px;
+  font-family: inherit;
+  resize: none;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+#verify-input:focus { border-color: rgba(212,165,116,0.5); }
+#verify-input::placeholder { color: rgba(255,255,255,0.25); }
+
+#verify-btn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 9px 16px;
+  background: linear-gradient(135deg, #D4A574, #F5E6D3);
+  border: none;
+  border-radius: 24px;
+  color: #1a1a2e;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+#verify-btn:hover { transform: translateY(-1px); opacity: 0.92; }
+#verify-btn:active { transform: translateY(0); }
+#verify-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* ── Results ────────────────────────────────────────────────────────── */
+
+.hidden { display: none !important; }
+
+#result-section {
+  margin-bottom: 12px;
+  padding: 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+}
+
+#result-score {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+#result-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.35);
+}
+
+#result-value { font-size: 30px; font-weight: 200; margin-left: auto; }
+#result-unit { font-size: 12px; color: rgba(255,255,255,0.25); }
+
+#result-risk {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.risk-high { background: rgba(239,68,68,0.2); color: #ef4444; }
+.risk-medium { background: rgba(234,179,8,0.2); color: #eab308; }
+.risk-low { background: rgba(34,197,94,0.2); color: #22c55e; }
+
+#result-summary {
+  font-size: 11px;
+  line-height: 1.5;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 6px;
+}
+
+#result-issues {
+  font-size: 10px;
+  color: #ef4444;
+  line-height: 1.5;
+}
+
+/* ── Tip Section ──────────────────────────────────────────────────────── */
+
+#tip-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  font-size: 10.5px;
+  color: rgba(255,255,255,0.45);
+  line-height: 1.4;
+  transition: opacity 0.4s ease;
+  min-height: 36px;
+}
+
+#tip-icon { font-size: 14px; flex-shrink: 0; }
+
+/* ── Controls ────────────────────────────────────────────────────────── */
+
+#controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.ctrl-btn {
+  flex: 1;
+  padding: 6px 12px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  color: rgba(255,255,255,0.6);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ctrl-btn:hover { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.8); }
+
+/* ── Footer ─────────────────────────────────────────────────────────── */
+
+#footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 9px;
+  color: rgba(255,255,255,0.15);
+}
+
+#footer-love { opacity: 0.5; }
+
+#status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; box-shadow: 0 0 4px #22c55e40; }
+  50% { opacity: 1; box-shadow: 0 0 8px #22c55e80; }
+}
