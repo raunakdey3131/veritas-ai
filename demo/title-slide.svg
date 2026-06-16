@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0a1a"/>
+      <stop offset="100%" style="stop-color:#1a1a2e"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#D4A574"/>
+      <stop offset="100%" style="stop-color:#F5E6D3"/>
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#bg)"/>
+  <!-- Grid -->
+  <g opacity="0.03">
+    <line x1="0" y1="0" x2="1920" y2="0" stroke="#fff" stroke-width="1"/>
+    <line x1="0" y1="1080" x2="1920" y2="1080" stroke="#fff" stroke-width="1"/>
+    <line x1="0" y1="540" x2="1920" y2="540" stroke="#fff" stroke-width="0.5"/>
+  </g>
+  <!-- Cat icon -->
+  <circle cx="960" cy="300" r="180" fill="none" stroke="url(#accent)" stroke-width="2" opacity="0.3"/>
+  <text x="960" y="330" text-anchor="middle" font-size="120">🐱</text>
+  <!-- Title -->
+  <text x="960" y="500" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="64" font-weight="700" fill="#F5E6D3">Veritas AI</text>
+  <text x="960" y="570" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="28" font-weight="300" fill="#D4A574">Hallucination Detection Platform</text>
+  <!-- Subtitle -->
+  <text x="960" y="660" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="18" fill="rgba(255,255,255,0.4)">A Production-Grade AI Verification System</text>
+  <!-- Bottom bar -->
+  <rect x="300" y="750" width="1320" height="60" rx="30" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <text x="960" y="787" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="16" fill="rgba(255,255,255,0.25)">React · Three.js · FastAPI · Chrome Extension · Docker · K8s · ML</text>
+</svg>

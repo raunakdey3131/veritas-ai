@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280">
+<title>Veritas AI — Demo Presentation</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap');
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', -apple-system, sans-serif; background: #07070f; color: #e0e0e0; overflow: hidden; height: 100vh; }
+#stage { width: 1280px; height: 720px; position: relative; margin: 0 auto; top: 50%; transform: translateY(-50%); overflow: hidden; background: radial-gradient(ellipse at 50% 0%, #121220 0%, #07070f 70%); }
+.slide { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1); transform: scale(0.97) translateY(20px); padding: 50px 70px; display: flex; flex-direction: column; }
+.slide.active { opacity: 1; pointer-events: auto; transform: scale(1) translateY(0); }
+.slide.out { opacity: 0; transform: scale(1.03) translateY(-20px); }
+
+/* ── Particles background (canvas) ── */
+#particles-canvas { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+
+/* ── Grid overlay ── */
+.grid-overlay { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size: 60px 60px; z-index: 0; pointer-events: none; }
+
+/* ── Slide content ── */
+.slide-content { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; }
+h1 { font-size: 44px; font-weight: 700; background: linear-gradient(135deg, #F5E6D3 0%, #D4A574 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
+h2 { font-size: 28px; font-weight: 600; color: #D4A574; margin-bottom: 6px; }
+h3 { font-size: 16px; font-weight: 500; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 3px; margin-bottom: 20px; }
+.tag { display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 500; margin-right: 6px; margin-bottom: 6px; background: rgba(212,165,116,0.15); color: #D4A574; border: 1px solid rgba(212,165,116,0.2); }
+.tag-blue { background: rgba(100,150,255,0.15); color: #6496ff; border-color: rgba(100,150,255,0.2); }
+.tag-green { background: rgba(34,197,94,0.15); color: #22c55e; border-color: rgba(34,197,94,0.2); }
+.tag-red { background: rgba(239,68,68,0.15); color: #ef4444; border-color: rgba(239,68,68,0.2); }
+.tag-purple { background: rgba(168,85,247,0.15); color: #a855f7; border-color: rgba(168,85,247,0.2); }
+
+/* ── Architecture flow ── */
+.arch-row { display: flex; align-items: center; gap: 8px; margin: 6px 0; flex-wrap: wrap; }
+.arch-box { padding: 10px 18px; border-radius: 12px; text-align: center; font-size: 11px; font-weight: 500; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); transition: all 0.3s; min-width: 80px; }
+.arch-box.active-box { background: rgba(212,165,116,0.15); border-color: rgba(212,165,116,0.3); transform: scale(1.05); box-shadow: 0 0 30px rgba(212,165,116,0.1); }
+.arch-arrow { color: rgba(255,255,255,0.2); font-size: 18px; }
+.arch-label { font-size: 9px; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; }
+
+/* ── Split layout ── */
+.split { display: flex; gap: 40px; flex: 1; }
+.split-left { flex: 1; }
+.split-right { flex: 1; display: flex; align-items: center; justify-content: center; }
+
+/* ── Code block ── */
+.code-block { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 18px 22px; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 11px; line-height: 1.8; color: rgba(255,255,255,0.7); overflow: hidden; }
+.code-block .kw { color: #FF7EB3; }
+.code-block .str { color: #22c55e; }
+.code-block .fn { color: #6496ff; }
+.code-block .cm { color: rgba(255,255,255,0.2); font-style: italic; }
+.code-block .num { color: #D4A574; }
+
+/* ── Feature grid ── */
+.feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.feature-card { padding: 16px 20px; border-radius: 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); transition: all 0.3s; }
+.feature-card:hover { background: rgba(255,255,255,0.05); border-color: rgba(212,165,116,0.15); }
+.feature-card .icon { font-size: 28px; margin-bottom: 6px; }
+.feature-card .title { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.8); margin-bottom: 3px; }
+.feature-card .desc { font-size: 10px; color: rgba(255,255,255,0.35); line-height: 1.5; }
+
+/* ── Extension mockup ── */
+.mockup-browser { border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden; background: rgba(255,255,255,0.02); width: 100%; max-width: 400px; }
+.mockup-bar { background: rgba(255,255,255,0.04); padding: 10px 14px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.mockup-dot { width: 10px; height: 10px; border-radius: 50%; }
+.mockup-dot.red { background: #ef4444; }
+.mockup-dot.yellow { background: #eab308; }
+.mockup-dot.green { background: #22c55e; }
+.mockup-url { font-size: 10px; color: rgba(255,255,255,0.2); padding: 4px 12px; background: rgba(255,255,255,0.03); border-radius: 6px; flex: 1; }
+.mockup-body { padding: 16px; }
+.mockup-body p { font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.6; }
+
+/* ── Cat 3D preview ── */
+.cat-preview { width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, rgba(212,165,116,0.08) 0%, transparent 70%); display: flex; align-items: center; justify-content: center; font-size: 100px; animation: catFloat 3s ease-in-out infinite; }
+@keyframes catFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+/* ── Stats bar ── */
+.stat { text-align: center; padding: 10px; }
+.stat-value { font-size: 22px; font-weight: 700; color: #D4A574; }
+.stat-label { font-size: 9px; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 1px; }
+
+/* ── Bottom nav ── */
+.bottom-nav { position: absolute; bottom: 20px; left: 70px; right: 70px; display: flex; align-items: center; justify-content: space-between; z-index: 10; }
+.slide-dots { display: flex; gap: 8px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.15); cursor: pointer; transition: all 0.3s; }
+.dot.active { background: #D4A574; width: 24px; border-radius: 4px; }
+.dot:hover { background: rgba(255,255,255,0.3); }
+.nav-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: rgba(255,255,255,0.5); padding: 8px 20px; border-radius: 20px; cursor: pointer; font-size: 12px; font-family: inherit; transition: all 0.2s; }
+.nav-btn:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); }
+.nav-arrow { background: none; border: none; color: rgba(255,255,255,0.2); font-size: 24px; cursor: pointer; transition: color 0.2s; padding: 8px; }
+.nav-arrow:hover { color: rgba(255,255,255,0.6); }
+.slide-counter { font-size: 12px; color: rgba(255,255,255,0.15); letter-spacing: 2px; }
+
+/* ── Script overlay (for presenter) ── */
+.script-note { position: absolute; bottom: 60px; right: 70px; z-index: 20; background: rgba(0,0,0,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 12px 16px; max-width: 350px; font-size: 11px; line-height: 1.6; color: rgba(255,255,255,0.5); opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+.script-note.visible { opacity: 1; pointer-events: auto; }
+.script-note .label { font-size: 8px; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.2); margin-bottom: 4px; }
+.script-note .text { color: rgba(255,255,255,0.7); }
+.show-script-btn { position: absolute; bottom: 70px; right: 70px; z-index: 25; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); color: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 12px; font-size: 10px; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+.show-script-btn:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5); }
+
+/* ── Pipeline animation ── */
+.pipeline { display: flex; align-items: center; gap: 4px; margin: 20px 0; flex-wrap: wrap; }
+.pipeline-step { padding: 8px 14px; border-radius: 8px; font-size: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); color: rgba(255,255,255,0.3); transition: all 0.4s; }
+.pipeline-step.done { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.2); color: #22c55e; }
+.pipeline-step.active-step { background: rgba(212,165,116,0.12); border-color: rgba(212,165,116,0.25); color: #D4A574; }
+.pipeline-arrow { color: rgba(255,255,255,0.1); font-size: 14px; }
+
+/* ── Responsive scaling ── */
+@media (max-width: 1300px) { #stage { transform: scale(0.8) translateY(-62%); transform-origin: top center; top: 0; } }
+@media (max-width: 1050px) { #stage { transform: scale(0.65) translateY(-76%); } }
+@media (max-width: 850px) { #stage { transform: scale(0.5) translateY(-100%); } }
+
+/* ── Animated elements ── */
+.fade-in { opacity: 0; transform: translateY(15px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.fade-in.visible { opacity: 1; transform: translateY(0); }
+.delay-1 { transition-delay: 0.1s; }
+.delay-2 { transition-delay: 0.2s; }
+.delay-3 { transition-delay: 0.3s; }
+.delay-4 { transition-delay: 0.4s; }
+.delay-5 { transition-delay: 0.5s; }
+.delay-6 { transition-delay: 0.6s; }
+.delay-7 { transition-delay: 0.7s; }
+
+/* ── Memory game ── */
+.memory-bar { height: 4px; border-radius: 2px; background: rgba(255,255,255,0.05); margin: 8px 0; overflow: hidden; }
+.memory-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, #D4A574, #F5E6D3); transition: width 1s ease; width: 0%; }
+
+/* ── Keyboard key ── */
+kbd { display: inline-block; padding: 2px 6px; font-size: 10px; font-family: inherit; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; color: rgba(255,255,255,0.5); }
+
+/* ── Chrome extension popup mock ── */
+.ext-popup { width: 240px; background: rgba(20,20,35,0.95); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+.ext-popup .ext-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.ext-popup .ext-title { font-size: 14px; font-weight: 600; color: #F5E6D3; }
+.ext-popup .ext-input { width: 100%; padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.7); font-size: 11px; font-family: inherit; outline: none; }
+.ext-popup .ext-btn { width: 100%; padding: 8px; border-radius: 20px; border: none; background: linear-gradient(135deg, #D4A574, #F5E6D3); color: #1a1a2e; font-weight: 600; font-size: 11px; cursor: pointer; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<div id="stage">
+<canvas id="particles-canvas"></canvas>
+<div class="grid-overlay"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 0: Title -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide active" data-slide="0">
+  <div class="slide-content" style="justify-content:center;align-items:center;text-align:center;">
+    <div class="cat-preview" style="margin-bottom:20px;">🐱</div>
+    <h1 style="font-size:56px;">Veritas AI</h1>
+    <p style="font-size:20px;color:rgba(255,255,255,0.4);margin-bottom:8px;font-weight:300;">Hallucination Detection Platform</p>
+    <div style="display:flex;gap:8px;justify-content:center;margin:20px 0;">
+      <span class="tag">React + TypeScript</span>
+      <span class="tag tag-blue">Three.js 3D</span>
+      <span class="tag tag-green">FastAPI</span>
+      <span class="tag tag-red">Chrome Extension</span>
+      <span class="tag tag-purple">Machine Learning</span>
+    </div>
+    <div style="display:flex;gap:40px;margin-top:20px;">
+      <div class="stat"><div class="stat-value">12</div><div class="stat-label">Microservices</div></div>
+      <div class="stat"><div class="stat-value">4</div><div class="stat-label">ML Models</div></div>
+      <div class="stat"><div class="stat-value">🐱</div><div class="stat-label">3D Pet Assistant</div></div>
+    </div>
+    <p style="font-size:11px;color:rgba(255,255,255,0.15);margin-top:30px;">Click or use ← → arrows to navigate</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 1: Problem & Solution -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="1">
+  <div class="slide-content">
+    <h3>The Problem</h3>
+    <div class="split" style="margin-top:10px;">
+      <div class="split-left">
+        <div style="background:rgba(239,68,68,0.04);border:1px solid rgba(239,68,68,0.1);border-radius:16px;padding:24px;margin-bottom:20px;">
+          <p style="font-size:14px;color:#ef4444;font-weight:500;margin-bottom:8px;">⚠ LLMs Hallucinate</p>
+          <p style="font-size:12px;color:rgba(255,255,255,0.4);line-height:1.7;">Large language models confidently generate false information — inventing facts, citations, dates, and events with no awareness of their inaccuracy.</p>
+        </div>
+        <div style="display:flex;gap:12px;">
+          <div style="flex:1;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:14px;">
+            <p style="font-size:11px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Example</p>
+            <p style="font-size:13px;font-weight:500;color:#ef4444;">"Google was founded in 1908"</p>
+            <p style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px;">❌ False — confidently stated</p>
+          </div>
+          <div style="flex:1;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:14px;">
+            <p style="font-size:11px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Cost</p>
+            <p style="font-size:13px;font-weight:500;color:#D4A574;">$Millions in damage</p>
+            <p style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px;">Healthcare, legal, finance</p>
+          </div>
+        </div>
+      </div>
+      <div class="split-right">
+        <div style="background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.1);border-radius:16px;padding:30px;text-align:center;">
+          <p style="font-size:40px;margin-bottom:10px;">🎯</p>
+          <p style="font-size:18px;font-weight:600;color:#22c55e;margin-bottom:8px;">Our Solution</p>
+          <p style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.7;">Multi-stage verification pipeline that <br>detects, scores, and explains <br>hallucinations in real-time.</p>
+          <div style="display:flex;gap:8px;justify-content:center;margin-top:16px;">
+            <span class="tag tag-green">Detect</span>
+            <span class="tag tag-green">Score</span>
+            <span class="tag tag-green">Explain</span>
+            <span class="tag tag-green">Prevent</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 2: Architecture -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="2">
+  <div class="slide-content">
+    <h3>Architecture Overview</h3>
+    <p style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:16px;">12 microservices · Event-driven · 100M verifications/day</p>
+
+    <div style="text-align:center;margin:10px 0;">
+      <div class="arch-row" style="justify-content:center;">
+        <div class="arch-box active-box"><div>🌐 User Query</div><div class="arch-label">Input</div></div>
+        <span class="arch-arrow">→</span>
+        <div class="arch-box"><div>📝 Claim Extraction</div><div class="arch-label">spaCy + Transformers</div></div>
+        <span class="arch-arrow">→</span>
+        <div class="arch-box"><div>🔍 Knowledge Retrieval</div><div class="arch-label">Qdrant + ES + Neo4j</div></div>
+        <span class="arch-arrow">→</span>
+        <div class="arch-box"><div>✅ Verification Engine</div><div class="arch-label">RoBERTa NLI</div></div>
+      </div>
+      <div class="arch-row" style="justify-content:center;margin-top:8px;">
+        <div class="arch-box"><div>📊 Risk Scoring</div><div class="arch-label">Score 0-100</div></div>
+        <span class="arch-arrow">→</span>
+        <div class="arch-box" style="border-color:rgba(239,68,68,0.2);"><div>🚨 Hallucination Score</div><div class="arch-label">Final Output</div></div>
+      </div>
+    </div>
+
+    <div class="feature-grid">
+      <div class="feature-card"><div class="icon">🔐</div><div class="title">API Gateway</div><div class="desc">Auth, rate limiting, circuit breaking, OpenTelemetry tracing</div></div>
+      <div class="feature-card"><div class="icon">🧠</div><div class="title">ML Models</div><div class="desc">RoBERTa NLI · DeBERTa-v3 · Cross-Encoder · MLP Risk Predictor</div></div>
+      <div class="feature-card"><div class="icon">🗄️</div><div class="title">Database Layer</div><div class="desc">PostgreSQL (partitioned) · Neo4j Graph · Elasticsearch</div></div>
+      <div class="feature-card"><div class="icon">☸️</div><div class="title">Infrastructure</div><div class="desc">Docker · K8s (HPA) · Terraform GKE · GitHub Actions CI/CD</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 3: Web App - Dashboard -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="3">
+  <div class="slide-content">
+    <h3>Web Application — Dashboard</h3>
+    <div class="split" style="margin-top:10px;">
+      <div class="split-left">
+        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:18px;">
+          <p style="font-size:11px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Verification Pipeline</p>
+          <div class="pipeline" id="pipeline">
+            <div class="pipeline-step">Extract Claims</div>
+            <span class="pipeline-arrow">→</span>
+            <div class="pipeline-step">Retrieve Evidence</div>
+            <span class="pipeline-arrow">→</span>
+            <div class="pipeline-step">Verify</div>
+            <span class="pipeline-arrow">→</span>
+            <div class="pipeline-step">Score</div>
+            <span class="pipeline-arrow">→</span>
+            <div class="pipeline-step">Result</div>
+          </div>
+          <div style="margin-top:12px;">
+            <div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.12);border-radius:10px;padding:12px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:16px;">🚨</span>
+                <span style="font-size:12px;font-weight:500;color:#ef4444;">HIGHLY HALLUCINATED</span>
+                <span style="margin-left:auto;font-size:22px;font-weight:200;color:#ef4444;">88</span>
+                <span style="font-size:10px;color:rgba(255,255,255,0.2);">/100</span>
+              </div>
+              <p style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:6px;">"Google was founded in 1908" — contradicts verified knowledge</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="split-right">
+        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:18px;width:100%;">
+          <p style="font-size:11px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Key Features</p>
+          <div class="feature-card" style="margin-bottom:8px;"><div class="title">🎯 Interactive Knowledge Graph</div><div class="desc">Force-directed graph visualizing claim-evidence relationships</div></div>
+          <div class="feature-card" style="margin-bottom:8px;"><div class="title">📊 Analytics Dashboard</div><div class="desc">Recharts: verification trends, model drift, latency histograms</div></div>
+          <div class="feature-card" style="margin-bottom:8px;"><div class="title">🔄 Risk Gauge</div><div class="desc">SVG animated gauge — real-time hallucination score 0-100</div></div>
+          <div class="feature-card"><div class="title">✨ Particle Background</div><div class="desc">60fps canvas particles, cursor glow, click burst effects</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 4: 3D Cat Assistant -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="4">
+  <div class="slide-content">
+    <h3>3D Interactive Cat Assistant</h3>
+    <div class="split" style="margin-top:10px;">
+      <div class="split-left">
+        <p style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:12px;">A fully animated desktop companion built with Three.js</p>
+        <div class="feature-grid" style="grid-template-columns:1fr;">
+          <div class="feature-card"><div class="icon">🐱</div><div class="title">Chibi 3D Cat with Headphones</div><div class="desc">Cream-white fur · Big shiny anime eyes · Pink blush · Collar with bell</div></div>
+          <div class="feature-card"><div class="icon">🔄</div><div class="title">Expressive Animations</div><div class="desc">Ear flop · Tail wag · Blink · Breathing · Happy sway · Tongue blep · Bell jingle</div></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <span class="tag">Three.js</span>
+          <span class="tag tag-blue">React Three Fiber</span>
+          <span class="tag tag-purple">60fps</span>
+        </div>
+        <div style="margin-top:16px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:14px;">
+          <p style="font-size:11px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Cat Reactions</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div style="padding:6px 12px;background:rgba(239,68,68,0.06);border-radius:8px;font-size:10px;color:#ef4444;">🚨 High risk → alarm</div>
+            <div style="padding:6px 12px;background:rgba(234,179,8,0.06);border-radius:8px;font-size:10px;color:#eab308;">🧐 Medium → curious</div>
+            <div style="padding:6px 12px;background:rgba(34,197,94,0.06);border-radius:8px;font-size:10px;color:#22c55e;">✅ Low risk → happy</div>
+          </div>
+        </div>
+      </div>
+      <div class="split-right" style="flex-direction:column;align-items:center;">
+        <div class="cat-preview" style="font-size:140px;width:240px;height:240px;">🐱</div>
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:10px 20px;margin-top:10px;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:16px;">🎧</span>
+          <span style="font-size:11px;color:rgba(255,255,255,0.3);">"I check facts for you!"</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 5: Chrome Extension -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="5">
+  <div class="slide-content">
+    <h3>Chrome Extension — Desktop Pet Detective</h3>
+    <div class="split" style="margin-top:10px;">
+      <div class="split-left">
+        <div class="mockup-browser">
+          <div class="mockup-bar">
+            <div class="mockup-dot red"></div>
+            <div class="mockup-dot yellow"></div>
+            <div class="mockup-dot green"></div>
+            <div class="mockup-url">wikipedia.org/wiki/Python_(programming_language)</div>
+          </div>
+          <div class="mockup-body" style="min-height:180px;">
+            <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:8px;">Python (programming language)</p>
+            <p style="font-size:11px;color:rgba(255,255,255,0.4);">Python was created in <span style="color:#22c55e;font-weight:600;">1991</span> by Guido van Rossum...</p>
+            <div style="margin-top:12px;padding:8px 12px;background:rgba(212,165,116,0.08);border:1px solid rgba(212,165,116,0.15);border-radius:8px;display:flex;align-items:center;gap:8px;width:fit-content;">
+              <span>🐱</span>
+              <span style="font-size:10px;color:#D4A574;">✓ Checked — Reliable!</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="split-right">
+        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:20px;width:100%;">
+          <p style="font-size:11px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Extension Features</p>
+          <div class="feature-card" style="margin-bottom:8px;"><div class="icon">🖱️</div><div class="title">Right-Check Detection</div><div class="desc">Select any text → right-click → "Check for Hallucinations"</div></div>
+          <div class="feature-card" style="margin-bottom:8px;"><div class="icon">🐱</div><div class="title">Canvas Desktop Pet</div><div class="desc">Pixel-cute cat with eye tracking, gentle float, speech bubbles, drag anywhere</div></div>
+          <div class="feature-card" style="margin-bottom:8px;"><div class="icon">📋</div><div class="title">Popup Verification</div><div class="desc">Type any claim → instant hallucination score · Reliable/Unreliable verdict</div></div>
+          <div class="feature-card"><div class="icon">🧠</div><div class="title">Local + API Fallback</div><div class="desc">Heuristic detection when offline · Full API when backend available</div></div>
+          <div style="margin-top:12px;display:flex;gap:6px;">
+            <span class="tag">Chrome Extension v3</span>
+            <span class="tag tag-blue">Context Menus</span>
+            <span class="tag tag-green">Manifest V3</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 6: Live Demo -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="6">
+  <div class="slide-content">
+    <h3>Live Verification Demo</h3>
+    <div class="split" style="margin-top:10px;">
+      <div class="split-left">
+        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:18px;">
+          <p style="font-size:11px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Test Cases</p>
+          <div id="demo-cases" style="display:flex;flex-direction:column;gap:8px;">
+            <div class="demo-case" data-claim="google was founded in 1908" style="padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.05);cursor:pointer;transition:all 0.2s;font-size:12px;" onmouseover="this.style.borderColor='rgba(239,68,68,0.3)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.05)'">
+              <span style="color:rgba(255,255,255,0.5);">"Google was founded in 1908"</span>
+              <span style="float:right;color:#ef4444;">🚨 Hallucination</span>
+            </div>
+            <div class="demo-case" data-claim="python was created in 1991 by guido van rossum" style="padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.05);cursor:pointer;transition:all 0.2s;font-size:12px;" onmouseover="this.style.borderColor='rgba(34,197,94,0.3)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.05)'">
+              <span style="color:rgba(255,255,255,0.5);">"Python was created in 1991 by Guido"</span>
+              <span style="float:right;color:#22c55e;">✅ Verified True</span>
+            </div>
+            <div class="demo-case" data-claim="the moon is made of cheese" style="padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.05);cursor:pointer;transition:all 0.2s;font-size:12px;" onmouseover="this.style.borderColor='rgba(239,68,68,0.3)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.05)'">
+              <span style="color:rgba(255,255,255,0.5);">"The moon is made of cheese"</span>
+              <span style="float:right;color:#ef4444;">🚨 Hallucination</span>
+            </div>
+            <div class="demo-case" data-claim="google was founded in 1998 by Larry Page and Sergey Brin" style="padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.05);cursor:pointer;transition:all 0.2s;font-size:12px;" onmouseover="this.style.borderColor='rgba(34,197,94,0.3)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.05)'">
+              <span style="color:rgba(255,255,255,0.5);">"Google was founded in 1998 by Larry & Sergey"</span>
+              <span style="float:right;color:#22c55e;">✅ Verified True</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="split-right">
+        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:18px;width:100%;">
+          <p style="font-size:11px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Example Response</p>
+          <div id="demo-result" style="transition:all 0.3s;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="width:80px;height:80px;border-radius:50%;border:3px solid #ef4444;display:flex;align-items:center;justify-content:center;flex-direction:column;">
+                <span style="font-size:24px;font-weight:200;color:#ef4444;">88</span>
+                <span style="font-size:7px;color:rgba(255,255,255,0.2);text-transform:uppercase;">/100</span>
+              </div>
+              <div>
+                <div style="font-size:12px;font-weight:600;color:#ef4444;">🚨 HIGHLY HALLUCINATED</div>
+                <p style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px;">Google was founded in 1998 by Larry Page and Sergey Brin, not 1908.</p>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:16px;display:flex;gap:6px;flex-wrap:wrap;" id="demo-tags">
+            <span class="tag tag-red">Score: 88/100</span>
+            <span class="tag tag-red">Confidence: 8%</span>
+            <span class="tag">3 claims analyzed</span>
+            <span class="tag">Latency: 234ms</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p style="font-size:10px;color:rgba(255,255,255,0.15);margin-top:auto;text-align:center;">Live demo at <span style="color:rgba(255,255,255,0.3);">frontend-five-rho.vercel.app</span> — Chrome Extension in <span style="color:rgba(255,255,255,0.3);">/extension</span></p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 7: Tech Deep Dive -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="7">
+  <div class="slide-content">
+    <h3>Technical Deep Dive</h3>
+    <div class="feature-grid" style="grid-template-columns:1fr 1fr 1fr;margin-top:10px;">
+      <div class="feature-card"><div class="icon">🎨</div><div class="title">Frontend</div><div class="desc">React 19 · Vite 5 · TypeScript · Tailwind CSS · Framer Motion · Three.js · Recharts · 60fps particles · Glass-morphism · Responsive</div></div>
+      <div class="feature-card"><div class="icon">⚙️</div><div class="title">Backend</div><div class="desc">FastAPI · 12 microservices · OpenTelemetry · Prometheus · JWT auth · Rate limiting · Circuit breakers · Async event-driven</div></div>
+      <div class="feature-card"><div class="icon">🧬</div><div class="title">ML Pipeline</div><div class="desc">RoBERTa-large-NLI · DeBERTa-v3 · Cross-Encoder · MLP risk · spaCy NER · Sentence transformers · PyTorch</div></div>
+      <div class="feature-card"><div class="icon">🗃️</div><div class="title">Data Layer</div><div class="desc">PostgreSQL (partitioned, 100M+) · Neo4j knowledge graph · Elasticsearch full-text · Redis cache · Qdrant vector DB</div></div>
+      <div class="feature-card"><div class="icon">🐳</div><div class="title">Infrastructure</div><div class="desc">Docker Compose · K8s with HPA · Terraform GKE · GitHub Actions CI/CD · Multi-stage builds · Health checks</div></div>
+      <div class="feature-card"><div class="icon">🔌</div><div class="title">Chrome Extension</div><div class="desc">Manifest V3 · Service worker · Context menus · Canvas pet · Eye tracking · Speech bubbles · State machine · Storage API</div></div>
+    </div>
+    <div style="margin-top:16px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+      <span class="tag">12,000+ lines</span>
+      <span class="tag tag-blue">52 files</span>
+      <span class="tag tag-green">100% TypeScript</span>
+      <span class="tag tag-purple">CI/CD Pipeline</span>
+      <span class="tag">Production Grade</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 8: CTAs & Contact -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="8">
+  <div class="slide-content" style="justify-content:center;align-items:center;text-align:center;">
+    <h3 style="margin-bottom:4px;">Built for Production</h3>
+    <p style="font-size:16px;color:rgba(255,255,255,0.5);margin-bottom:30px;max-width:500px;line-height:1.6;">Designed to detect AI hallucinations at scale — from Chrome extensions to enterprise Kubernetes clusters.</p>
+    <div style="display:flex;gap:16px;justify-content:center;margin-bottom:30px;">
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:24px 32px;">
+        <p style="font-size:12px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">Live Demo</p>
+        <p style="font-size:14px;color:#D4A574;">frontend-five-rho.vercel.app</p>
+      </div>
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:24px 32px;">
+        <p style="font-size:12px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">Source Code</p>
+        <p style="font-size:14px;color:#D4A574;">github.com/raunakdey3131/veritas-ai</p>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;justify-content:center;margin-bottom:20px;">
+      <div class="cat-preview" style="width:100px;height:100px;font-size:60px;">🐱</div>
+    </div>
+    <p style="font-size:11px;color:rgba(255,255,255,0.15);">Built with ❤️ using React · Three.js · FastAPI · Python · TensorFlow · Docker · K8s</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Script note overlay -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div id="scriptNote" class="script-note">
+  <div class="label">🎙️ Narration Script</div>
+  <div class="text" id="scriptText">Welcome to Veritas AI — a production-grade hallucination detection platform. Let me walk you through the architecture, features, and live demo.</div>
+</div>
+<button class="show-script-btn" id="toggleScript" onclick="toggleScript()">📄 Script</button>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Bottom navigation -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="bottom-nav">
+  <button class="nav-arrow" onclick="prevSlide()">←</button>
+  <div class="slide-dots" id="slideDots"></div>
+  <div class="slide-counter" id="slideCounter">1 / 9</div>
+  <button class="nav-arrow" onclick="nextSlide()">→</button>
+</div>
+
+</div><!-- /stage -->
+
+<script>
+// ── Particles ──
+const canvas = document.getElementById('particles-canvas')
+const ctx = canvas.getContext('2d')
+canvas.width = 1280; canvas.height = 720
+const particles = Array.from({length: 80}, () => ({
+  x: Math.random() * 1280, y: Math.random() * 720,
+  vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
+  r: Math.random() * 1.5 + 0.5, o: Math.random() * 0.3 + 0.05,
+}))
+function drawParticles() {
+  ctx.clearRect(0, 0, 1280, 720)
+  particles.forEach(p => {
+    p.x += p.vx; p.y += p.vy
+    if (p.x < 0) p.x = 1280; if (p.x > 1280) p.x = 0
+    if (p.y < 0) p.y = 720; if (p.y > 720) p.y = 0
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
+    ctx.fillStyle = `rgba(255,255,255,${p.o})`; ctx.fill()
+  })
+  requestAnimationFrame(drawParticles)
+}
+drawParticles()
+
+// ── Slide navigation ──
+let current = 0
+const slides = document.querySelectorAll('.slide')
+const total = slides.length
+const dotsContainer = document.getElementById('slideDots')
+const counter = document.getElementById('slideCounter')
+
+slides.forEach((_, i) => {
+  const dot = document.createElement('div')
+  dot.className = 'dot' + (i === 0 ? ' active' : '')
+  dot.onclick = () => goTo(i)
+  dotsContainer.appendChild(dot)
+})
+
+function goTo(idx) {
+  if (idx < 0 || idx >= total) return
+  slides[current].classList.remove('active')
+  slides[current].classList.add('out')
+  current = idx
+  slides[current].classList.remove('out')
+  slides[current].classList.add('active')
+  document.querySelectorAll('.dot').forEach((d, i) => d.className = 'dot' + (i === current ? ' active' : ''))
+  counter.textContent = `${current + 1} / ${total}`
+  updateScript()
+  updateFadeIns()
+}
+
+function nextSlide() { goTo(current + 1) }
+function prevSlide() { goTo(current - 1) }
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide() }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide() }
+})
+
+// ── Fade-in elements ──
+function updateFadeIns() {
+  const active = slides[current]
+  if (!active) return
+  active.querySelectorAll('.fade-in').forEach((el, i) => {
+    setTimeout(() => el.classList.add('visible'), i * 150)
+  })
+}
+updateFadeIns()
+
+// ── Pipeline animation on slide 3 ──
+function animatePipeline() {
+  const steps = document.querySelectorAll('#pipeline .pipeline-step')
+  if (!steps.length) return
+  steps.forEach((s, i) => {
+    setTimeout(() => {
+      s.classList.add('done');
+      if (i > 0) steps[i-1]?.classList.remove('active-step')
+      if (i < steps.length - 1) steps[i+1]?.classList.add('active-step')
+    }, i * 800)
+  })
+}
+setInterval(() => {
+  if (current === 3) {
+    const steps = document.querySelectorAll('#pipeline .pipeline-step')
+    steps.forEach(s => { s.classList.remove('done', 'active-step') })
+    steps[0]?.classList.add('active-step')
+    animatePipeline()
+  }
+}, 5000)
+
+// ── Script notes ──
+const scripts = [
+  `Welcome to Veritas AI. A production-grade hallucination detection platform. In this demo, I'll show you how it detects, scores, and explains AI hallucinations in real time — from the web app to the Chrome extension desktop pet.`,
+  `AI hallucinations are a critical problem. LLMs confidently generate false information — invented dates, fake citations, impossible facts. This costs millions in healthcare, legal, and finance. Veritas AI solves this with a multi-stage verification pipeline.`,
+  `Here's the architecture: 12 microservices working together. Claim extraction with spaCy, knowledge retrieval across vector and graph databases, NLI verification with RoBERTa, citation validation, contradiction detection, and risk scoring — all behind a gateways with auth, rate limiting, and full observability.`,
+  `The web dashboard provides real-time verification. Type any claim, see the pipeline process it step by step, and get a hallucination score from 0 to 100. The interactive knowledge graph shows evidence relationships. The analytics dashboard tracks trends and model drift.`,
+  `Meet the 3D cat assistant — a fully animated Three.js chibi cat with headphones. It reacts to verification results: ears perk up for reliable facts, alarm for hallucinations. Features ear flop, tail wag, blink, breathing, happy sway, tongue blep, and bell jingle. All at 60fps.`,
+  `The Chrome Extension brings verification everywhere. Select any text on any page, right-click, and check for hallucinations. A pixel-cute canvas cat with eye tracking and gentle float acts as your desktop pet detective. The popup provides quick verification with local fallback when offline.`,
+  `Let's test it. "Google was founded in 1908" — score 88, highly hallucinated. "Python was created in 1991" — verified reliable. "The moon is made of cheese" — hallucinated. The system detects false claims about dates, speeds, populations, and more, with clear explanations.`,
+  `Under the hood: React 19 with Vite and TypeScript on the frontend, Three.js for 3D, FastAPI microservices with OpenTelemetry tracing, ML models including RoBERTa NLI and DeBERTa, PostgreSQL with partitioning for 100M+ records, Neo4j knowledge graphs, Docker and Kubernetes with HPA, and full CI/CD.`,
+  `Thank you for watching. Veritas AI is fully open source — check the live demo and GitHub repo. Built to detect AI hallucinations at scale, from Chrome extensions to enterprise Kubernetes. I'm excited to bring this level of AI safety engineering to your team.`
+]
+
+let scriptVisible = false
+function toggleScript() {
+  scriptVisible = !scriptVisible
+  document.getElementById('scriptNote').classList.toggle('visible', scriptVisible)
+}
+
+function updateScript() {
+  document.getElementById('scriptText').textContent = scripts[current] || scripts[0]
+}
+
+// ── Demo result cycling (slide 6) ──
+if (document.querySelectorAll('.demo-case').length) {
+  document.querySelectorAll('.demo-case').forEach(el => {
+    el.addEventListener('click', function() {
+      const claim = this.dataset.claim || ''
+      const isHallucination = this.querySelector('span:last-child')?.textContent?.includes('🚨')
+      const resultDiv = document.getElementById('demo-result')
+      const tagsDiv = document.getElementById('demo-tags')
+
+      if (isHallucination) {
+        resultDiv.innerHTML = `<div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:80px;height:80px;border-radius:50%;border:3px solid #ef4444;display:flex;align-items:center;justify-content:center;flex-direction:column;">
+            <span style="font-size:24px;font-weight:200;color:#ef4444;">88</span>
+            <span style="font-size:7px;color:rgba(255,255,255,0.2);text-transform:uppercase;">/100</span>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:600;color:#ef4444;">🚨 HIGHLY HALLUCINATED</div>
+            <p style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px;">"${claim}" — contradicts verified knowledge.</p>
+          </div>
+        </div>`
+        tagsDiv.innerHTML = `<span class="tag tag-red">Score: 88/100</span><span class="tag tag-red">Confidence: 8%</span><span class="tag">3 claims analyzed</span><span class="tag">Latency: 234ms</span>`
+      } else {
+        resultDiv.innerHTML = `<div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:80px;height:80px;border-radius:50%;border:3px solid #22c55e;display:flex;align-items:center;justify-content:center;flex-direction:column;">
+            <span style="font-size:24px;font-weight:200;color:#22c55e;">5</span>
+            <span style="font-size:7px;color:rgba(255,255,255,0.2);text-transform:uppercase;">/100</span>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:600;color:#22c55e;">✅ HIGHLY RELIABLE</div>
+            <p style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px;">"${claim}" — verified against multiple authoritative sources.</p>
+          </div>
+        </div>`
+        tagsDiv.innerHTML = `<span class="tag tag-green">Score: 5/100</span><span class="tag tag-green">Confidence: 97%</span><span class="tag">3 claims verified</span><span class="tag">Latency: 198ms</span>`
+      }
+    })
+  })
+}
+</script>
+</body>
+</html>
