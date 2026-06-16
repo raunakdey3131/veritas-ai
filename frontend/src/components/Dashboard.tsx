@@ -50,8 +50,9 @@ export default function Dashboard() {
       try {
         const res = await verifyResponse({ query, response })
         setResult(res)
+        setTimeout(() => catReact(res.risk_level), 500)
       } catch (e: any) {
-        setError(e.message || 'Verification failed')
+        setError('Backend offline — using local analysis')
         const lower = response.toLowerCase()
         const falseClaims = [
           { pattern: /2010.*python|python.*2010/i, correction: 'Python was created in 1991 by Guido van Rossum, not 2010.', score: 85 },
@@ -128,9 +129,7 @@ export default function Dashboard() {
           processed_at: new Date().toISOString(),
         })
         // Cat reacts!
-        if (result?.risk_level) {
-          setTimeout(() => catReact(result.risk_level), 500)
-        }
+        setTimeout(() => catReact(riskLevel), 500)
       } finally {
         setLoading(false)
         setShowGraph(true)
